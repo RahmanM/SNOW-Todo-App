@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?><database>
     <element label="My Todo" max_length="40" name="u_my_todo" type="collection">
-        <element attributes="edge_encryption_enabled=true" choice="1" label="Category" max_length="40" name="u_category" type="string">
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Category" max_length="40" name="u_category" reference="u_my_todo_category" type="reference">
             <choice/>
         </element>
         <element attributes="edge_encryption_enabled=true" label="Description" max_length="400" name="u_description" type="string"/>
         <element label="Is Completed" max_length="40" name="u_is_completed" type="boolean"/>
-        <element attributes="edge_encryption_enabled=true" default="javascript:global.getNextObjNumberPadded();" label="Number" max_length="40" name="u_number" type="string"/>
+        <element attributes="edge_encryption_enabled=true" default="javascript:global.getNextObjNumberPadded();" label="Number" max_length="40" name="u_number" read_only="true" type="string"/>
     </element>
 </database>

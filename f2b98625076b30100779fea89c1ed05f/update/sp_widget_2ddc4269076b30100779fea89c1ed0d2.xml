@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function($scope, spUtil) {
+  var c = this;
+	
+	c.categories = [];
+	c.todos = [];
+	
+	// populate the categories so we can fill the drop-down
+	// also populate the Todos
+	// called from ng-init();
+	c.onLoad = function(){
+		var data = {loadData:true};
+		c.data.loadData = true;
+		
+		c.server.get(data).then(function(response) {	
+			c.categories = response.data.categories;
+			c.todos = response.data.todos;
+		});
+	}
+	
+	// Watching the table and updating the scope and consequently the UI with changes
+	spUtil.recordWatch($scope, 'u_my_todo', '', function(name, data){
+		//debugger;
+		spUtil.update($scope);
+	});
+	
+	
+	// Set todo as completed!
+	c.completeTodo = function(todo){
+		var data = {
+			completeTodo : true,
+			sys_id : todo.sys_id
+		};
+	
+		c.server.get(data).then(function(response){
+				c.data.completeTodo = false;
+		});
+	}
+	
+	// Delete todo after user confirms
+	c.deleteTodo =  function(todo){
+			if(!confirm('Are you sure, you want to delete the record?')){
+				 return;
+			}
+		
+			var data = {
+				deleteTodo : true, // Flag to pass to server to check
+			  sys_id : todo.sys_id
+			};
+			
+			c.server.get(data).then(function(response){
+			});
+	}
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.form-group.required .control-label:before {
+  content:"*";
+  color:red;
+  position: absolute;
+  margin-top: -5px;
+  margin-left: -12px;
+  font-size: 2em;
+}
+
+</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>todo_widget_details</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {  }]]></link>
+        <name>My Todo Details</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	
+	/* LOAD DATA ... */
+	
+	// Get categories only the active ones, limit to 100 and apply sorting
+	function getCategories(){
+		var sc = new GlideRecord('u_my_todo_category');
+		sc.addActiveQuery();
+		sc.setLimit(100);
+		sc.orderByDesc("u_description");
+		sc.query();
+		var results = [];
+		
+		while (sc.next()) {
+			var item = {};
+			item.description = sc.getDisplayValue('u_description');
+			item.sys_id = sc.getUniqueValue('sys_id');				
+			results.push(item);
+		}
+				
+		return results;
+	}
+	
+	// Get todos only the active ones, limit to 100 and apply sorting
+	function getTodos(){
+		var sc = new GlideRecord('u_my_todo');
+		sc.addActiveQuery();
+		sc.setLimit(100);
+		sc.orderByDesc("sys_created_on");
+		sc.query();
+		var results = [];
+		
+		while (sc.next()) {
+			var item = {};
+			item.description = sc.getDisplayValue('u_description');
+			item.category = sc.getDisplayValue('u_category');
+			item.isCompleted = sc.getDisplayValue('u_is_completed');
+			item.sys_id = sc.getUniqueValue('sys_id');				
+			results.push(item);
+		}
+				
+		return results;
+	}
+	
+	//gs.info("VF: widget input: " + JSON.stringify(input));
+	
+	// during the ng-init input could be null so we want to load data
+	if(!input || (input && input.loadData)){
+		this.data.categories = getCategories();
+    this.data.todos = getTodos();
+	}
+	
+	
+	/* ACTIONS... */
+	
+	// Add new todo
+	if(input && input.insertTodo){
+		var gr = new GlideRecord('u_todo');
+		gr.initialize();
+		gr.u_description =  input.description;
+		gr.u_is_completed = input.isCompleted;
+		gr.u_category = input.category;
+		gr.insert();
+
+		gs.addInfoMessage("Todo added successfuly!");
+	}
+	
+	// Delete todo
+	if(input && input.deleteTodo){
+		var deleteRecord = new GlideRecord('u_my_todo')
+		deleteRecord.addQuery('sys_id', input.sys_id); //to delete one record
+		deleteRecord.query();
+		deleteRecord.next();
+		deleteRecord.deleteRecord();
+
+		gs.addInfoMessage("Todo deleted successfuly!");
+	}
+	
+	// Complete todo
+	if(input && input.completeTodo){
+		var updateRecord = new GlideRecord('u_my_todo')
+		updateRecord.addQuery('sys_id', input.sys_id); //to update one record
+		updateRecord.query();
+		updateRecord.next();
+	  updateRecord.u_is_completed = true;
+		updateRecord.update();
+
+		gs.addInfoMessage("Todo completed successfuly!");
+	}
+	
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-11-01 01:17:53</sys_created_on>
+        <sys_id>2ddc4269076b30100779fea89c1ed0d2</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>My Todo Details</sys_name>
+        <sys_package display_value="My Todo App" source="f2b98625076b30100779fea89c1ed05f">f2b98625076b30100779fea89c1ed05f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="My Todo App">f2b98625076b30100779fea89c1ed05f</sys_scope>
+        <sys_update_name>sp_widget_2ddc4269076b30100779fea89c1ed0d2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-11-01 01:31:08</sys_updated_on>
+        <template><![CDATA[<br>
+
+<div class="panel panel-default" ng-init="c.onLoad();" >
+  <div class="panel-heading">
+    <h3 class="panel-title">Todo List</h3>
+  </div>
+  
+<div class="table-responsive table-bordered table-striped">
+  <table class="table">
+    <tr class="">
+      	<th>Description</th>
+      	<th>Category</th>
+        <th>Done?</th>
+      	<th></th>
+      <th></th>
+    </tr>
+    <tr class="" ng-repeat="todo in data.todos">
+      <td>{{::todo.description}}</td>
+      <td>{{::todo.category}}</td>
+      <td>
+        <!--NB: strangely T/F is returned as string? -->
+        <span 
+              
+              class="glyphicon glyphicon-ok"
+              ng-show="todo.isCompleted==='true'"
+        ></span>
+        
+       <span 
+              class="glyphicon glyphicon-remove"
+              ng-show="todo.isCompleted==='false'"
+        ></span>
+      </td>
+      <td>
+        <input 
+               type="button" 
+               value="Delete" 
+               ng-click="c.deleteTodo(todo)"
+               class="btn btn-danger btn-xs" />
+      </td>
+      <td>
+        <input 
+               type="button" 
+               value="Done!" 
+               ng-disabled="todo.isCompleted==='true'"
+               ng-click="c.completeTodo(todo)"
+               class="btn btn-primary btn-xs" />
+      </td>
+    </tr>
+  </table>
+</div>
+
+ <!-- <pre>{{data | json}}</pre> -->
+  </div>
+</div>
+
+
+]]></template>
+    </sp_widget>
+</record_update>
