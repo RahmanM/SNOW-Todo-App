@@ -1,4 +1,4 @@
-# SNOW-Todo-App
+# ServiceNow-Todo-App
 
 * Sample Todo App
 * Portal widget that enables to add new Todo
