@@ -6,5 +6,6 @@
         <element attributes="edge_encryption_enabled=true" label="Description" max_length="400" name="u_description" type="string"/>
         <element label="Is Completed" max_length="40" name="u_is_completed" type="boolean"/>
         <element attributes="edge_encryption_enabled=true" default="javascript:global.getNextObjNumberPadded();" label="Number" max_length="40" name="u_number" read_only="true" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Requires Attention?" max_length="40" name="u_requires_attention" type="boolean"/>
     </element>
 </database>
