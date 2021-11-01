@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="My Todo Category" max_length="40" name="u_my_todo_category" type="collection">
+        <element display="true" label="Description" max_length="200" name="u_description" type="string"/>
+    </element>
+</database>

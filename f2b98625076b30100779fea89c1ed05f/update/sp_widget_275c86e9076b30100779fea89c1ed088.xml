@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function($scope, spUtil) {
+  var c = this;
+	
+	// Save the actual todo by calling the server
+	c.saveTodo = function(todo){
+		var data = {
+			insertTodo : true, // Flag to let server which function to be called
+			description: c.data.description,
+			category: c.data.category 
+		}
+		
+		c.server.get(data).then(function(response){
+				c.data.description = '';
+				c.data.category = '';
+		});
+	}
+	
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.form-group.required .control-label:before {
+  content:"*";
+  color:red;
+  position: absolute;
+  margin-top: -5px;
+  margin-left: -12px;
+  font-size: 2em;
+}
+
+</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>todo_widget_header</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {  }]]></link>
+        <name>My Todo Header</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	
+	/* LOAD DATA ... */
+	
+	// Get categories only the active ones, limit to 100 and apply sorting
+	function getCategories(){
+		var sc = new GlideRecord('u_my_todo_category');
+		sc.addActiveQuery();
+		sc.setLimit(100);
+		sc.orderByDesc("u_description");
+		sc.query();
+		var results = [];
+		
+		while (sc.next()) {
+			var item = {};
+			item.description = sc.getDisplayValue('u_description');
+			item.sys_id = sc.getUniqueValue('sys_id');				
+			results.push(item);
+		}
+				
+		return results;
+	}
+	
+	// Get todos only the active ones, limit to 100 and apply sorting
+	function getTodos(){
+		var sc = new GlideRecord('u_my_todo');
+		sc.addActiveQuery();
+		sc.setLimit(100);
+		sc.orderByDesc("sys_created_on");
+		sc.query();
+		var results = [];
+		
+		while (sc.next()) {
+			var item = {};
+			item.description = sc.getDisplayValue('u_description');
+			item.category = sc.getDisplayValue('u_category');
+			item.isCompleted = sc.getDisplayValue('u_is_completed');
+			item.sys_id = sc.getUniqueValue('sys_id');				
+			results.push(item);
+		}
+				
+		return results;
+	}
+	
+	//gs.info("VF: widget input: " + JSON.stringify(input));
+	
+	// during the ng-init input could be null so we want to load data
+	if(!input || (input && input.loadData)){
+		this.data.categories = getCategories();
+    this.data.todos = getTodos();
+	}
+	
+	
+	/* ACTIONS... */
+	
+	// Add new todo
+	if(input && input.insertTodo){
+		var gr = new GlideRecord('u_my_todo');
+		gr.initialize();
+		gr.u_description =  input.description;
+		gr.u_is_completed = input.isCompleted;
+		gr.u_category = input.category;
+		gr.insert();
+
+		gs.addInfoMessage("Todo added successfuly!");
+	}
+	
+	
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-11-01 01:15:50</sys_created_on>
+        <sys_id>275c86e9076b30100779fea89c1ed088</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>My Todo Header</sys_name>
+        <sys_package display_value="My Todo App" source="f2b98625076b30100779fea89c1ed05f">f2b98625076b30100779fea89c1ed05f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="My Todo App">f2b98625076b30100779fea89c1ed05f</sys_scope>
+        <sys_update_name>sp_widget_275c86e9076b30100779fea89c1ed088</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-11-01 01:31:00</sys_updated_on>
+        <template><![CDATA[<br>
+
+<div class="panel panel-default"  >
+  <div class="panel-heading">
+    <h3 class="panel-title">Create New Todo</h3>
+  </div>
+  <div class="panel-body">
+    <form class="form-horizontal" name="todoForm">
+  <div class="form-group required">
+    <label for="todo-description" 
+           class="control-label col-xs-4 col-lg-2"
+           >Todo Description:</label> 
+    <div class="col-xs-8 col-lg-10">
+      <input id="todo-description" 
+             name="description" 
+             placeholder="Todo Description" 
+             type="text" 
+             class="form-control" 
+             required="required"
+             ng-model="data.description"
+             >
+    </div>
+  </div>
+  <div class="form-group required">
+    <label 
+           class="control-label col-xs-4 col-lg-2" 
+           for="todo-category"
+           >Todo Category:</label> 
+    <div class="col-xs-8 col-lg-10">
+      <select 
+              id="todo-category" 
+              name="todo-category" 
+              class="select form-control" 
+              required="required"
+              ng-model="data.category"
+              ng-options="category.sys_id as category.description for category in data.categories"
+              >
+        <option value="Travel">Travel</option>
+      </select>
+    </div>
+  </div>
+<div class="form-group">
+    <div class="col-xs-offset-4 col-sm-10 col-lg-offset-2">
+      <div class="checkbox">
+        <label>
+          <input 
+                 type="checkbox"
+                 ng-model="data.isCompleted"
+                 > Is Completed?
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="form-group row">
+    <div class="col-xs-12 col-lg-12">
+      <button 
+              name="Save" 
+              type="submit" 
+              class="btn btn-primary"
+              ng-disabled="todoForm.$invalid"
+              ng-click="c.saveTodo()"
+       >Save
+      </button>
+      <span 
+            ng-show="todoForm.$invalid"
+            class="pull-right">Please fill the required fields.</span>
+    </div>
+  </div>
+</form>
+
+ <!-- <pre>{{data | json}}</pre> -->
+  </div>
+</div>
+
+
+]]></template>
+    </sp_widget>
+</record_update>
